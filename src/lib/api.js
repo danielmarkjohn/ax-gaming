@@ -20,7 +20,16 @@ export async function resolveVanity(vanity) {
 }
 
 export async function getCs2Stats(steamId) {
+  // Use the working server endpoint from server.js
   return fetchJSON(`/api/steam/cs2-stats?steamId=${encodeURIComponent(steamId)}`);
+}
+
+export async function getCs2Schema() {
+  return fetchJSON(`/api/steam/cs2-schema`);
+}
+
+export async function getCs2GlobalStats() {
+  return fetchJSON(`/api/steam/cs2-global-stats`);
 }
 
 export async function getNews(appid, count=3) {
