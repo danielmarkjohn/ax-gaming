@@ -38,7 +38,7 @@ async function steam(path) {
 // Resolve vanity URL
 app.get('/api/steam/resolve-vanity', async (req, res) => {
   const { vanity } = req.query
-  if (!vanity) return res.status(400).json({ error: 'vanity required' })
+  if (!vanity) return res.status(400).json({ error: 'Please enter your steam id' })
   try {
     const data = await steam(`/ISteamUser/ResolveVanityURL/v0001/?vanityurl=${encodeURIComponent(vanity)}`)
     if (data?.response?.success === 1) {
