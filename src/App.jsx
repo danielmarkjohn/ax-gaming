@@ -188,22 +188,13 @@ function getMapStats(stats) {
 }
 
 export default function App() {
-  const { profile, games, cs2Stats, news, loading, darkMode } = useAppStore()
-  const [selectedGame, setSelectedGame] = useState(null)
-  const [searchQuery, setSearchQuery] = useState('')
+  const { 
+    steamId, profile, games, cs2Stats, news, loading, darkMode, 
+    selectedGame, setSelectedGame 
+  } = useAppStore()
+  
   const { route, navigate } = useRouter()
-
-  // Add keyboard shortcut for search
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault()
-        document.querySelector('.search-input')?.focus()
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  const [showCs2Stats, setShowCs2Stats] = useState(false)
 
   const computed = useMemo(() => computeInsights(cs2Stats), [cs2Stats])
 
@@ -269,7 +260,7 @@ export default function App() {
             <div className="relative z-10">
               <div className="text-6xl mb-4 animate-float">🎮</div>
               <div className="text-2xl font-semibold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Welcome to Steam Dashboard
+                Welcome to Gaming Dashboard (Steam)
               </div>
               <div className="text-muted mb-6">Get detailed insights into your Counter-Strike 2 performance</div>
               <div className="grid md:grid-cols-3 gap-4 text-left">
@@ -317,29 +308,58 @@ export default function App() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mt-4">
                 <StatCard title="Total Games" value={games.length} icon="🎮" />
                 <StatCard 
                   title="Account Created" 
                   value={profile.timecreated ? new Date(profile.timecreated * 1000).getFullYear() : 'Unknown'} 
                   icon="📅" 
                 />
+                <StatCard 
+                  title="Friends" 
+                  value={profile.friend_count || 'Private'} 
+                  icon="👥" 
+                />
+                <StatCard 
+                  title="Years Active" 
+                  value={profile.timecreated ? new Date().getFullYear() - new Date(profile.timecreated * 1000).getFullYear() : 'Unknown'} 
+                  icon="⏳" 
+                />
+                <StatCard 
+                  title="Achievements" 
+                  value={computed?.achievements?.length || 0} 
+                  icon="🏆" 
+                />
               </div>
             </div>
           </>
         )}
 
-        {/* CS2 Dashboard - Homepage Version */}
-        <CS2Dashboard 
-          cs2Stats={cs2Stats} 
-          computed={computed} 
-          accuracyHistory={accuracyHistory}
-          isHomepage={true}
-        />
+        {/* CS2 Stats Toggle Button */}
+        {profile && cs2Stats && (
+          <div className="card text-center">
+            <button 
+              onClick={() => setShowCs2Stats(!showCs2Stats)}
+              className="btn bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 mx-auto"
+            >
+              <span>🎮</span>
+              {showCs2Stats ? 'Hide CS2 Stats' : 'Show CS2 Stats'}
+            </button>
+          </div>
+        )}
 
-        {/* Enhanced Core Stats */}
-        {cs2Stats && computed && (
+        {/* All CS2 Stats - Only show when toggled */}
+        {showCs2Stats && cs2Stats && computed && (
           <>
+            {/* CS2 Dashboard */}
+            <CS2Dashboard 
+              cs2Stats={cs2Stats} 
+              computed={computed} 
+              accuracyHistory={accuracyHistory}
+              isHomepage={true}
+            />
+
+            {/* Enhanced Core Stats */}
             <div className="grid md:grid-cols-6 gap-4">
               <StatCard title="Kills" value={computed.kills.toLocaleString()} icon="⚔️" />
               <StatCard title="Deaths" value={computed.deaths.toLocaleString()} icon="💀" />
@@ -506,140 +526,75 @@ export default function App() {
                 <AccuracyChart accuracyHistory={accuracyHistory} />
               </div>
             </div>
+          </>
+        )}
 
-            {playtimeData.length > 0 && (
-              <PlaytimeChart data={playtimeData} />
-            )}
+        {/* Game Library Playtime - Always visible */}
+        {playtimeData.length > 0 && (
+          <PlaytimeChart data={playtimeData} />
+        )}
 
-            {/* Gaming Health & Wellness Section */}
-            {computed && (
-              <div className="card">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <span>🏥</span> Gaming Health & Wellness
-                  <div className="px-2 py-1 bg-green-500/20 text-green-400 rounded-lg text-xs">
-                    Playtime Analytics
-                  </div>
-                </h3>
-                
-                {/* Health Stats Overview */}
-                <div className="grid md:grid-cols-4 gap-4 mb-6">
-                  <StatCard 
-                    title="Daily Average" 
-                    value={`${(computed.hoursPlayed / 365).toFixed(1)}h`} 
-                    icon="📊" 
-                    hint={computed.hoursPlayed / 365 > 4 ? 'Consider reducing' : 'Healthy range'}
-                  />
-                  <StatCard 
-                    title="Total Hours" 
-                    value={`${computed.hoursPlayed.toFixed(0)}h`} 
-                    icon="⏰" 
-                    hint={`${(computed.hoursPlayed / 24).toFixed(0)} full days`}
-                  />
-                  <StatCard 
-                    title="Health Score" 
-                    value={computed.hoursPlayed / 365 < 2 ? '95' : computed.hoursPlayed / 365 < 4 ? '75' : '45'} 
-                    icon="💚" 
-                    hint={computed.hoursPlayed / 365 < 2 ? 'Excellent' : computed.hoursPlayed / 365 < 4 ? 'Good' : 'Needs attention'}
-                  />
-                  <StatCard 
-                    title="Break Reminder" 
-                    value="Every 1h" 
-                    icon="⏸️" 
-                    hint="Recommended frequency"
-                  />
+        {/* Gaming Health & Wellness Section - Always visible */}
+        {profile && computed && (
+          <div className="card">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <span>🏥</span> Gaming Health & Wellness
+              <div className="px-2 py-1 bg-green-500/20 text-green-400 rounded-lg text-xs">
+                Playtime Analytics
+              </div>
+            </h3>
+            
+            {/* Health Stats Overview */}
+            <div className="grid md:grid-cols-4 gap-4 mb-6">
+              <StatCard 
+                title="Daily Average" 
+                value={`${(computed.hoursPlayed / 365).toFixed(1)}h`} 
+                icon="📊" 
+                hint={computed.hoursPlayed / 365 > 4 ? 'Consider reducing' : 'Healthy range'}
+              />
+              <StatCard 
+                title="Total Hours" 
+                value={`${computed.hoursPlayed.toFixed(0)}h`} 
+                icon="⏰" 
+                hint={`${(computed.hoursPlayed / 24).toFixed(0)} full days`}
+              />
+              <StatCard 
+                title="Health Score" 
+                value={computed.hoursPlayed / 365 < 2 ? '95' : computed.hoursPlayed / 365 < 4 ? '75' : '45'} 
+                icon="💚" 
+                hint={computed.hoursPlayed / 365 < 2 ? 'Excellent' : computed.hoursPlayed / 365 < 4 ? 'Good' : 'Needs attention'}
+              />
+              <StatCard 
+                title="Break Reminder" 
+                value="Every 1h" 
+                icon="⏸️" 
+                hint="Recommended frequency"
+              />
+            </div>
+
+            {/* Health Charts */}
+            <div className="grid lg:grid-cols-2 gap-4 mb-6">
+              <PlaytimeHealthChart computed={computed} />
+              <SessionBreakdownChart computed={computed} />
+              <WeeklyPatternChart computed={computed} />
+              
+              {/* Health Insights Panel */}
+              <div className="card bg-gradient-to-br from-green-500/10 to-blue-500/10 border border-green-500/20">
+                <div className="mb-3 font-semibold flex items-center gap-2">
+                  <span>💡</span> Health Insights & Recommendations
                 </div>
-
-                {/* Health Charts */}
-                <div className="grid lg:grid-cols-2 gap-4 mb-6">
-                  <PlaytimeHealthChart computed={computed} />
-                  <SessionBreakdownChart computed={computed} />
-                  <WeeklyPatternChart computed={computed} />
-                  
-                  {/* Health Insights Panel */}
-                  <div className="card bg-gradient-to-br from-green-500/10 to-blue-500/10 border border-green-500/20">
-                    <div className="mb-3 font-semibold flex items-center gap-2">
-                      <span>💡</span> Health Insights & Recommendations
-                    </div>
-                    <div className="space-y-3 text-sm">
-                      <div className="flex items-start gap-2">
-                        <span className="text-green-400">✅</span>
-                        <div>
-                          <div className="font-medium text-green-400">20-20-20 Rule</div>
-                          <div className="text-muted">Every 20 minutes, look at something 20 feet away for 20 seconds</div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-2">
-                        <span className="text-blue-400">💧</span>
-                        <div>
-                          <div className="font-medium text-blue-400">Stay Hydrated</div>
-                          <div className="text-muted">Drink water every hour during gaming sessions</div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-2">
-                        <span className="text-yellow-400">🏃</span>
-                        <div>
-                          <div className="font-medium text-yellow-400">Movement Breaks</div>
-                          <div className="text-muted">Stand and stretch every 60-90 minutes</div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-2">
-                        <span className={computed.hoursPlayed / 365 > 4 ? "text-red-400" : "text-green-400"}>
-                          {computed.hoursPlayed / 365 > 4 ? "⚠️" : "😴"}
-                        </span>
-                        <div>
-                          <div className={`font-medium ${computed.hoursPlayed / 365 > 4 ? "text-red-400" : "text-green-400"}`}>
-                            Sleep Schedule
-                          </div>
-                          <div className="text-muted">
-                            {computed.hoursPlayed / 365 > 4 ? 
-                              "High playtime may affect sleep. Consider earlier sessions." :
-                              "Maintain consistent sleep schedule for better performance"
-                            }
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Gaming Wellness Tips */}
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-purple-400">🧘</span>
-                      <span className="font-medium text-purple-400">Mental Health</span>
-                    </div>
-                    <div className="text-sm text-muted">
-                      Take breaks to prevent gaming fatigue and maintain focus. Consider meditation apps between sessions.
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 rounded-xl bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/20">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-orange-400">👁️</span>
-                      <span className="font-medium text-orange-400">Eye Care</span>
-                    </div>
-                    <div className="text-sm text-muted">
-                      Adjust monitor brightness, use blue light filters, and ensure proper lighting to reduce eye strain.
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 rounded-xl bg-gradient-to-br from-green-500/10 to-teal-500/10 border border-green-500/20">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-green-400">🏋️</span>
-                      <span className="font-medium text-green-400">Physical Health</span>
-                    </div>
-                    <div className="text-sm text-muted">
-                      Maintain good posture, use ergonomic equipment, and incorporate wrist/neck exercises.
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-start gap-2">
+                    <span className="text-green-400">✅</span>
+                    <div>
+                      <div className="font-medium text-green-400">20-20-20 Rule</div>
+                      <div className="text-muted">Every 20 minutes, look at something 20 feet away for 20 seconds</div>
                     </div>
                   </div>
                 </div>
               </div>
-            )}
-          </>
+            </div>
+          </div>
         )}
 
         {games.length > 0 && (
@@ -651,27 +606,6 @@ export default function App() {
 
         {news?.length > 0 && <NewsSection news={news} />}
 
-        {!profile && !loading && (
-          <div className="card text-center">
-            <div className="text-6xl mb-4">🎮</div>
-            <div className="text-2xl font-semibold mb-2">Welcome to CS2 Dashboard</div>
-            <div className="text-muted mb-6">Get detailed insights into your Counter-Strike 2 performance</div>
-            <div className="grid md:grid-cols-3 gap-4 text-left">
-              <div className="p-4 rounded-xl bg-white/5">
-                <div className="text-primary font-semibold mb-2">📊 Performance Analytics</div>
-                <div className="text-sm text-muted">Track K/D, accuracy, headshot percentage, and more</div>
-              </div>
-              <div className="p-4 rounded-xl bg-white/5">
-                <div className="text-accent font-semibold mb-2">🎯 AI Insights</div>
-                <div className="text-sm text-muted">Get personalized improvement suggestions</div>
-              </div>
-              <div className="p-4 rounded-xl bg-white/5">
-                <div className="text-green-400 font-semibold mb-2">📈 Progress Tracking</div>
-                <div className="text-sm text-muted">Visualize your gaming journey with charts</div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
       <Footer />
     </div>

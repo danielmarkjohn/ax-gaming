@@ -6,7 +6,7 @@ const CS_APPID = 730
 
 export default function Header({ onLogoClick }) {
   const { steamId, setSteamId, setProfile, setGames, setCs2Stats, setNews, setLoading, loading, darkMode, toggleDarkMode } = useAppStore()
-  const [input, setInput] = useState('76561198263113480')
+  const [input, setInput] = useState('')
   
   async function handleLoad() {
     setLoading(true)
@@ -47,10 +47,10 @@ export default function Header({ onLogoClick }) {
           <div 
             className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent cursor-pointer hover:scale-105 transition-transform duration-300"
             onClick={onLogoClick}
-          >
-            🎮 Steam Dashboard
+          > 
+            🎮 Gaming Dashboard (Steam)
           </div>
-          <span className="text-muted text-sm hidden sm:inline">Developed by Daniel</span>
+          <span className="text-muted text-sm hidden sm:inline">Developed by Axsphere</span>
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <button
@@ -60,9 +60,10 @@ export default function Header({ onLogoClick }) {
           >
             {darkMode ? '☀️' : '🌙'}
           </button>
-          <input
-            className="input flex-1 sm:w-64"
-            placeholder="SteamID64 or vanity name"
+          <input 
+            type="text" 
+            className="input flex-1"
+            placeholder="76561198263113480 or vanity name"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleLoad()}

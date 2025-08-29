@@ -9,7 +9,7 @@ export default function Footer() {
             <span className="text-2xl">🎮</span>
             <div>
               <div className="font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Steam Dashboard
+                AxGaming Dashboard
               </div>
               <div className="text-xs text-muted">Gaming Analytics Platform</div>
             </div>
@@ -17,7 +17,7 @@ export default function Footer() {
           
           <div className="text-center">
             <div className="text-sm text-muted mb-2">Developed with ❤️ by</div>
-            <div className="font-semibold text-primary mb-2">Daniel Mark John</div>
+            <div className="font-semibold text-primary mb-2">Axsphere</div>
             <div className="flex items-center gap-4 justify-center">
               <a 
                 href="https://github.com/danielmarkjohn" 
@@ -42,7 +42,7 @@ export default function Footer() {
           
           <div className="text-center">
             <div className="text-xs text-muted">
-              © 2024 Steam Dashboard
+              © 2024 Axsphere
             </div>
             <div className="text-xs text-muted">
               Built with React & Steam Web API

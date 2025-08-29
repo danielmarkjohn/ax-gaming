@@ -11,6 +11,7 @@ export const useAppStore = create(
       news: [],
       loading: false,
       darkMode: true,
+      selectedGame: null,
       setSteamId: (steamId) => set({ steamId }),
       setProfile: (profile) => set({ profile }),
       setGames: (games) => set({ games }),
@@ -18,6 +19,7 @@ export const useAppStore = create(
       setNews: (news) => set({ news }),
       setLoading: (loading) => set({ loading }),
       toggleDarkMode: () => set({ darkMode: !get().darkMode }),
+      setSelectedGame: (selectedGame) => set({ selectedGame }),
     }),
     {
       name: 'steam-dashboard-storage',
