@@ -30,7 +30,7 @@ export default function Header({ onLogoClick }) {
       setCs2Stats(cs2Stats)
       setNews(news?.appnews?.newsitems || [])
     } catch (e) {
-      alert(e.message)
+      alert("Please enter your Steam ID to proceed.")
     } finally {
       setLoading(false)
     }
